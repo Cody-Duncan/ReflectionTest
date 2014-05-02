@@ -4,8 +4,12 @@
 #include <type_traits>
 #include "Meta.h"
 
-meta_define(Test);
-meta_define(int);
+meta_define(Test)
+{
+	meta_add_member(a);
+	meta_add_member(b);
+}
+meta_define_pod(int)
 
 int main(int argc, const char* argv[])
 {
@@ -45,4 +49,12 @@ int main(int argc, const char* argv[])
 	//check int type
 	cout << meta::get<int>()->Name() << endl << meta::get<int>()->Size() << endl;
 	cout << endl;
+
+
+	//print out Test's structure.
+	cout << meta::get<Test>()->Name() << " contains members: " << endl;
+	for (const meta::Member* m : meta::get<Test>()->members)
+	{
+		cout << "    " << m->TypeName() << " " << m->Name() << endl;
+	}
 }
