@@ -80,6 +80,7 @@
     <ClInclude Include="Meta.h" />
     <ClInclude Include="RemoveQualifiers.h" />
     <ClInclude Include="Test.h" />
+    <ClInclude Include="Variant.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

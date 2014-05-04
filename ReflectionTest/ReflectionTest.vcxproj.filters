@@ -5,6 +5,7 @@
     <ClInclude Include="MacroHelpers.h" />
     <ClInclude Include="Meta.h" />
     <ClInclude Include="RemoveQualifiers.h" />
+    <ClInclude Include="Variant.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
