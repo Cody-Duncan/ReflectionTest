@@ -55,14 +55,23 @@ void Test1()
 }
 
 
-
-int main(int argc, const char* argv[])
+void TestVariant()
 {
 	using namespace std;
 
-	Test1();
-	cout << endl;
+	meta::RefVariant v = 1;
 
-	cout << meta::get("stuff")->Name() << endl;
-	cout << meta::get("stuff")->Size() << endl;
+	std::cout << v.GetValue<int>() << endl;
+
+	v = true;
+
+	v = std::string("std::string!\n");
+}
+
+
+int main(int argc, const char* argv[])
+{
+	
+
+	TestVariant();
 }
