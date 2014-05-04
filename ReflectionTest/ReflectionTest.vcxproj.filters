@@ -4,6 +4,7 @@
     <ClInclude Include="Test.h" />
     <ClInclude Include="MacroHelpers.h" />
     <ClInclude Include="Meta.h" />
+    <ClInclude Include="RemoveQualifiers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

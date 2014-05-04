@@ -78,6 +78,7 @@
   <ItemGroup>
     <ClInclude Include="MacroHelpers.h" />
     <ClInclude Include="Meta.h" />
+    <ClInclude Include="RemoveQualifiers.h" />
     <ClInclude Include="Test.h" />
   </ItemGroup>
   <ItemGroup>

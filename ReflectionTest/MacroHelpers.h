@@ -7,6 +7,6 @@
 #define _CAT(x,y) x##y
 #define CAT(x,y) _CAT(x,y)
 
-
+//generate a "random name using macro counter
 #define NAME_GENERATOR_INTERNAL( _ ) CAT( GENERATED_NAME, _ )
 #define NAME_GENERATOR( ) NAME_GENERATOR_INTERNAL( __COUNTER__ )

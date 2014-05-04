@@ -4,21 +4,16 @@
 #include <type_traits>
 #include "Meta.h"
 
-meta_define(Test)
-{
-	meta_add_member(a);
-	meta_add_member(b);
-}
-meta_define_pod(int)
 
-int main(int argc, const char* argv[])
+
+void Test1()
 {
-    using namespace std;
+	using namespace std;
 
 	bool result = true;
-	
+
 	//check meta by type
-	if(!meta::has<Test>()) 
+	if (!meta::has<Test>())
 		printf("Test not registered by type");
 	cout << meta::get<Test>()->Name() << endl << meta::get<Test>()->Size() << endl;
 	cout << endl;
@@ -33,17 +28,17 @@ int main(int argc, const char* argv[])
 
 	//check meta by string name
 	std::string type = "Test";
-	if (!meta::has(type))
+	if (!meta::has_name(type))
 		printf("Test not registered by string name");
-	cout << meta::get(type)->Name() << endl << meta::get(type)->Size() << endl;
+	cout << meta::get_name(type)->Name() << endl << meta::get_name(type)->Size() << endl;
 	cout << endl;
 
 	const char* typebychar = "Test";
-	
+
 	//check meta by c-string name
-	if (!meta::has(typebychar))
+	if (!meta::has_name(typebychar))
 		printf("Test not registered by c-string name");
-	cout << meta::get(typebychar)->Name() << endl << meta::get(typebychar)->Size() << endl;
+	cout << meta::get_name(typebychar)->Name() << endl << meta::get_name(typebychar)->Size() << endl;
 	cout << endl;
 
 	//check int type
@@ -57,4 +52,17 @@ int main(int argc, const char* argv[])
 	{
 		cout << "    " << m->TypeName() << " " << m->Name() << endl;
 	}
+}
+
+
+
+int main(int argc, const char* argv[])
+{
+	using namespace std;
+
+	Test1();
+	cout << endl;
+
+	cout << meta::get("stuff")->Name() << endl;
+	cout << meta::get("stuff")->Size() << endl;
 }
