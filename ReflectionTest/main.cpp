@@ -51,6 +51,8 @@ void Test1()
 	{
 		cout << "    " << m->TypeName() << " " << m->Name() << endl;
 	}
+
+	cout << endl;
 }
 
 
@@ -58,9 +60,11 @@ void TestVariant()
 {
 	using namespace std;
 
+	Test1();
+
 	meta::RefVariant v = 1;
 
-	std::cout << v.GetValue<int>() << endl;
+	std::cout << "RefVariant Value: " << v.GetValue<int>() << endl;
 
 	v = true;
 

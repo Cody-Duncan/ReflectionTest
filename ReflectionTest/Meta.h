@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <assert.h>
 #include <iostream>
 
@@ -77,6 +78,8 @@ namespace meta
 		type->size = val;
 	}
 
+	std::vector<Type> allTypesStorage(200);
+
 	//////////////////////////////////////////////////////////////////////////////
 	//  TypeCreator Singleton
 	//////////////////////////////////////////////////////////////////////////////
@@ -115,13 +118,21 @@ namespace meta
 		}
 
 		// Ensure a single instance can exist for this class type
-		static Type *Get(void)
+		static Type* Get(void)
 		{
-			static Type instance;
-			return &instance;
+			if (!instance)
+			{
+				allTypesStorage.emplace_back();
+				instance = &allTypesStorage.back();
+			}
+			return instance;
 		}
+	private:
+		static Type* instance;
 	};
 
+	template<typename Metatype>
+	meta::Type* meta::TypeCreator<Metatype>::instance = nullptr;
 
 	//////////////////////////////////////////////////////////////////////////////
 	//  Member
@@ -204,7 +215,7 @@ namespace meta
 
 	//registers a type.
 	//Defines RegisterMetaData for the TypeCreator, so this must be followed by {}.
-	#define meta_define(TYPE)\
+#define meta_define(TYPE) \
 		namespace namespace_for_meta_types {																									\
 			meta::TypeCreator<meta::RemoveQualifiers<TYPE>::type> NAME_GENERATOR()(#TYPE, sizeof(TYPE));										\
 		}																																		\
