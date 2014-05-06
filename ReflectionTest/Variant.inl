@@ -67,6 +67,8 @@ namespace meta
 	//////////////////////////////////////////////////////////////////////////////
 
 	//a container to a variable.
+	//WARNING: Only assign refvariant with l-values. This really holds a pointer;
+	//    you don't want a dangling pointer when that r-value drops off the stack, do you?
 	class RefVariant
 	{
 	public:

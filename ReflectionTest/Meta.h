@@ -93,6 +93,11 @@ namespace meta
 	public:
 		TypeCreator(std::string name, unsigned size)
 		{
+			assert(instance == NULL);
+
+			allTypesStorage.emplace_back();
+			instance = &allTypesStorage.back();
+
 			Init(name, size);
 		}
 
@@ -120,11 +125,6 @@ namespace meta
 		// Ensure a single instance can exist for this class type
 		static Type* Get(void)
 		{
-			if (!instance)
-			{
-				allTypesStorage.emplace_back();
-				instance = &allTypesStorage.back();
-			}
 			return instance;
 		}
 	private:
@@ -324,3 +324,4 @@ meta_define_pod(char)
 meta_define_pod(char*)
 meta_define_pod(unsigned char)
 meta_define_pod(unsigned char*)
+meta_define_pod(std::string)

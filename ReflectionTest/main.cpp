@@ -60,21 +60,21 @@ void TestVariant()
 {
 	using namespace std;
 
-	Test1();
-
 	meta::RefVariant v = 1;
 
 	std::cout << "RefVariant Value: " << v.GetValue<int>() << endl;
 
 	v = true;
+	std::cout << "RefVariant Value: " << v.GetValue<bool>() << endl;
 
-	v = std::string("std::string!\n");
+	std::string originalstr("This be a string\n");
+	v = originalstr; //must be assigned an lvalue
+	std::cout << "RefVariant Value: " << v.GetValue<std::string>() << endl;
 }
 
 
 int main(int argc, const char* argv[])
 {
-	
-
+	Test1();
 	TestVariant();
 }
