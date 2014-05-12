@@ -11,6 +11,7 @@ public:
 	float y;
 	float z;
 
+	Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
 	Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 	Vector3(const float* arr) : x(arr[0]), y(arr[1]), z(arr[2]) {}
 
@@ -35,4 +36,4 @@ public:
 	meta_expose_internal(Thing);
 };
 
-void TestSerialization();
+void TestDeSerialization();

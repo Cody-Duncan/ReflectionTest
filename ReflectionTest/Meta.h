@@ -35,9 +35,10 @@ namespace meta
 		const std::string& Name(void) const { return name; }
 		unsigned Size(void) const { return size; }
 
-		void AddMember(const Member *member) { members.push_back(member); }
+		void AddMember(const Member *member);
 
 		std::vector<const Member *> members;
+		std::unordered_map<std::string, const Member *> mamberNames;
 
 		void Copy(void* dest, const void* src) const
 		{

@@ -1,0 +1,10 @@
+{
+	"Thing":
+	{
+		"size": 2,
+		"name": "Bob",
+		"radius": 4.5,
+		"height": 3.8,
+		"position": { "x":1.5, "y":2.63, "z":3.11 }
+	}
+}

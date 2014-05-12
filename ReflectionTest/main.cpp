@@ -74,6 +74,7 @@ void TestVariant()
 
 int main(int argc, const char* argv[])
 {
-	BasicTypeTest();
-	TestVariant();
+	//BasicTypeTest();
+	//TestVariant();
+	TestDeSerialization();
 }
