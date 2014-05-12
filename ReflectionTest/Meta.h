@@ -24,10 +24,7 @@ namespace meta
 	//////////////////////////////////////////////////////////////////////////////
 
 
-	//Friend function to initialize Type.
-	// A: InitType won't show up in Type as public function.
-	// B: Constructor for InitType called in singleton function.
-	void InitType(Type* type, std::string& string, unsigned val);
+	
 
 	class Type
 	{
@@ -72,13 +69,7 @@ namespace meta
 		unsigned size;
 	};
 
-	void InitType(Type* type, std::string& string, unsigned val)
-	{
-		type->name = string;
-		type->size = val;
-	}
-
-	std::vector<Type> allTypesStorage(200);
+	
 
 	//////////////////////////////////////////////////////////////////////////////
 	//  TypeCreator Singleton
@@ -219,7 +210,7 @@ namespace meta
 		namespace namespace_for_meta_types {																									\
 			meta::TypeCreator<meta::RemoveQualifiers<TYPE>::type> NAME_GENERATOR()(#TYPE, sizeof(TYPE));										\
 		}																																		\
-		meta::RemoveQualifiersPtr<TYPE>::type* TYPE::NullCast(void) { return reinterpret_cast<meta::RemoveQualifiers<Test>::type *>(NULL); }	\
+		meta::RemoveQualifiersPtr<TYPE>::type* TYPE::NullCast(void) { return reinterpret_cast<meta::RemoveQualifiers<TYPE>::type *>(NULL); }	\
 		void TYPE::AddMember(std::string name, unsigned offset, meta::Type *data) { return meta::TypeCreator<meta::RemoveQualifiersPtr<TYPE>::type>::AddMember(name, offset, data); } \
 		void meta::TypeCreator<meta::RemoveQualifiersPtr<TYPE>::type>::RegisterMetaData(void) { TYPE::RegisterMetaData(); }						\
 		void TYPE::RegisterMetaData(void) //define after this
@@ -303,25 +294,14 @@ namespace meta
 		return Meta::Get(str);
 	}
 
+
+	//Friend function to initialize Type.
+	// A: InitType won't show up in Type as public function.
+	// B: Constructor for InitType called in singleton function.
+	void InitType(Type* type, std::string& string, unsigned val);
+
+	extern std::vector<Type> allTypesStorage;
+
 }
 
 #include "Variant.inl"
-
-
-//////////////////////////////////////////////////////////////////////////////
-//  Primitive Types
-//////////////////////////////////////////////////////////////////////////////
-meta_define_pod(bool)
-meta_define_pod(int)
-meta_define_pod(unsigned int)
-meta_define_pod(short)
-meta_define_pod(unsigned short)
-meta_define_pod(long)
-meta_define_pod(unsigned long)
-meta_define_pod(float)
-meta_define_pod(double)
-meta_define_pod(char)
-meta_define_pod(char*)
-meta_define_pod(unsigned char)
-meta_define_pod(unsigned char*)
-meta_define_pod(std::string)

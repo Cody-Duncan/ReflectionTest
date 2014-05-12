@@ -2,10 +2,9 @@
 #include "Test.h"
 #include <iostream>
 #include <type_traits>
-#include "Meta.h"
+#include "SerializationTest.h"
 
-
-void Test1()
+void BasicTypeTest()
 {
 	using namespace std;
 
@@ -75,6 +74,6 @@ void TestVariant()
 
 int main(int argc, const char* argv[])
 {
-	Test1();
+	BasicTypeTest();
 	TestVariant();
 }

@@ -6,8 +6,12 @@
     <ClInclude Include="Meta.h" />
     <ClInclude Include="RemoveQualifiers.h" />
     <ClInclude Include="Variant.inl" />
+    <ClInclude Include="SerializationTest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SerializationTest.cpp" />
+    <ClCompile Include="Meta.cpp" />
+    <ClCompile Include="Test.cpp" />
   </ItemGroup>
 </Project>
