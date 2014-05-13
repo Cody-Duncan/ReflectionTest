@@ -7,11 +7,15 @@
     <ClInclude Include="RemoveQualifiers.h" />
     <ClInclude Include="Variant.inl" />
     <ClInclude Include="SerializationTest.h" />
+    <ClInclude Include="FunctionMeta.h" />
+    <ClInclude Include="FunctionTest.h" />
+    <ClInclude Include="indices.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SerializationTest.cpp" />
     <ClCompile Include="Meta.cpp" />
     <ClCompile Include="Test.cpp" />
+    <ClCompile Include="FunctionMain.cpp" />
   </ItemGroup>
 </Project>

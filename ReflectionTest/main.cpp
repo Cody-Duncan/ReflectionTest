@@ -3,6 +3,7 @@
 #include <iostream>
 #include <type_traits>
 #include "SerializationTest.h"
+#include "FunctionTest.h"
 
 void BasicTypeTest()
 {
@@ -77,4 +78,7 @@ int main(int argc, const char* argv[])
 	//BasicTypeTest();
 	//TestVariant();
 	TestDeSerialization();
+	FunctionSignatureTest();
+
+	return 0;
 }

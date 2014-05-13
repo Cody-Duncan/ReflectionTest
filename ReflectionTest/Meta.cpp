@@ -35,3 +35,8 @@ meta_define_pod(char*)
 meta_define_pod(unsigned char)
 meta_define_pod(unsigned char*)
 meta_define_pod(std::string)
+
+namespace namespace_for_meta_POD_types {
+		meta::TypeCreator<void> voidTypeCreator("void", 0);	
+}																									
+void meta::TypeCreator<void>::RegisterMetaData(void) {}
