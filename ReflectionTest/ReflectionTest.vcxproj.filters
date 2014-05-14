@@ -18,4 +18,7 @@
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="FunctionMain.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Any.inl" />
+  </ItemGroup>
 </Project>

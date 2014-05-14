@@ -19,13 +19,31 @@ namespace meta
 	class Member;
 	class Meta;
 
+	namespace internal
+	{
+		//! \brief Knows how to destruct a type.
+		template <typename Type> struct destructor
+		{
+			static void destruct(void* obj) { static_cast<Type*>(obj)->~Type(); }
+		};
+
+		//! \brief Knows how to move a non-const type.
+		template <typename Type> struct mover
+		{
+			static void move(void* dst, void* src) { new (dst)Type(std::move(*static_cast<Type*>(src))); }
+		};
+
+		//! \brief Knows how to copy a type.
+		template <typename Type> struct mover<const Type*>
+		{
+			static void move(void* dst, void* src) { new (dst)Type(*static_cast<Type*>(src)); }
+		};
+	}
+	
 	//////////////////////////////////////////////////////////////////////////////
 	//  Type
 	//////////////////////////////////////////////////////////////////////////////
-
-
 	
-
 	class Type
 	{
 	public:
@@ -148,6 +166,76 @@ namespace meta
 		unsigned offset;
 		const Type *data;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////////
+	// TypeRecord
+	//////////////////////////////////////////////////////////////////////////////
+	// Purpose: Stores qualifier information about a variable, like const, pointer, void, etc.
+	//          
+	struct TypeRecord
+	{
+		enum Qualifier 
+		{
+			Void, 
+			Value, 
+			Pointer, 
+			ConstPointer, 
+		};
+
+		const Type* type; //!< The type encoded
+		Qualifier qualifier; //!< Qualifier to the type denoting access pattern
+
+		TypeRecord(const Type* t, Qualifier q) : type(t), qualifier(q) { }
+		TypeRecord() : type(nullptr), qualifier(Void) { }
+	};
+
+	namespace internal
+	{
+		//Construct a TypeRecord for a specific type by value
+		template <typename Type> 
+		struct make_type_record 
+		{ 
+			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Value); } 
+		};
+
+		//Construct a TypeRecord for a specific type by pointer
+		template <typename Type> 
+		struct make_type_record<Type*> 
+		{ 
+			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Pointer); } 
+		};
+
+		//Construct a TypeRecord for a specific type by const pointer
+		template <typename Type> 
+		struct make_type_record<const Type*> 
+		{ 
+			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::ConstPointer); } 
+		};
+
+		//Construct a TypeRecord for a specific type by reference
+		template <typename Type> 
+		struct make_type_record<Type&>
+		{
+			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Pointer); } 
+		};
+
+		//Construct a TypeRecord for a specific type by const reference
+		template <typename Type> 
+		struct make_type_record<const Type&> 
+		{ 
+			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::ConstPointer); } 
+		};
+
+		//Construct a TypeRecord for void
+		template <> 
+		struct make_type_record<void> 
+		{ 
+			static const TypeRecord type() { return TypeRecord(nullptr, TypeRecord::Void); } 
+		};
+
+		template <typename Type> struct make_any;
+	}
 
 
 
@@ -306,3 +394,4 @@ namespace meta
 }
 
 #include "Variant.inl"
+#include "Any.inl"

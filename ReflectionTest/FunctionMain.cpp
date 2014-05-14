@@ -15,5 +15,5 @@ void FunctionSignatureTest()
 	for (unsigned int i = 0; i < thefunc.argCount; ++i)
 	{
 		printf("   Type%d: %s \n", i, thefunc.argArray[i]->Name().c_str());
-	}
+	}	
 }
