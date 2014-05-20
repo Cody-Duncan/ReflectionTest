@@ -1,4 +1,6 @@
 
+// https://github.com/EngineArchitectureClub/TalkSlides/tree/master/2013
+
 #include "Test.h"
 #include <iostream>
 #include <type_traits>
@@ -21,7 +23,7 @@ void BasicTypeTest()
 	Test a;
 	if (!meta::has(a))
 		printf("Test not registered by object");
-	const meta::Type* t = meta::get(a);
+	const meta::TypeInfo* t = meta::get(a);
 	cout << t->Name() << endl << t->Size() << endl;
 	cout << endl;
 

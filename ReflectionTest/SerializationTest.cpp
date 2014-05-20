@@ -95,7 +95,7 @@ void DeSerializeJsonObject(json_t* jThing, void* thingToBuild, const std::string
 	const char *c_key;
 	json_t *value;
 
-	meta::Type* thingType = meta::get_name(typeName);
+	meta::TypeInfo* thingType = meta::get_name(typeName);
 
 	json_object_foreach(jThing, c_key, value)
 	{

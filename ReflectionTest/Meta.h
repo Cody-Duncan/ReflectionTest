@@ -13,7 +13,7 @@
 
 namespace meta
 {
-	class Type;
+	class TypeInfo;
 	template <typename Metatype>
 	class TypeCreator;
 	class Member;
@@ -44,11 +44,11 @@ namespace meta
 	//  Type
 	//////////////////////////////////////////////////////////////////////////////
 	
-	class Type
+	class TypeInfo
 	{
 	public:
-		Type() {}
-		~Type() {};
+		TypeInfo() {}
+		~TypeInfo() {};
 
 		const std::string& Name(void) const { return name; }
 		unsigned Size(void) const { return size; }
@@ -82,7 +82,7 @@ namespace meta
 		}
 
 	private:
-		friend void InitType(Type* type, std::string& string, unsigned val);
+		friend void InitType(TypeInfo* type, std::string& string, unsigned val);
 
 		std::string name;
 		unsigned size;
@@ -106,14 +106,15 @@ namespace meta
 			assert(instance == NULL);
 
 			allTypesStorage.emplace_back();
-			instance = &allTypesStorage.back();
+			assert(allTypesStorage.size() > 0);
+			instance = &(allTypesStorage[allTypesStorage.size()-1]);
 
 			Init(name, size);
 		}
 
 		static void Init(std::string name, unsigned size)
 		{
-			Type* newType = Get();			//construct
+			TypeInfo* newType = Get();			//construct
 			InitType(newType, name, size);	//set variables
 			registerType<Metatype>();		//register
 
@@ -122,7 +123,7 @@ namespace meta
 
 		static void RegisterMetaData(void);
 
-		static void AddMember(std::string memberName, unsigned memberOffset, Type *meta)
+		static void AddMember(std::string memberName, unsigned memberOffset, TypeInfo *meta)
 		{
 			Get()->AddMember(new Member(memberName, memberOffset, meta));
 		}
@@ -133,16 +134,16 @@ namespace meta
 		}
 
 		// Ensure a single instance can exist for this class type
-		static Type* Get(void)
+		static TypeInfo* Get(void)
 		{
 			return instance;
 		}
 	private:
-		static Type* instance;
+		static TypeInfo* instance;
 	};
 
 	template<typename Metatype>
-	meta::Type* meta::TypeCreator<Metatype>::instance = nullptr;
+	meta::TypeInfo* meta::TypeCreator<Metatype>::instance = nullptr;
 
 	//////////////////////////////////////////////////////////////////////////////
 	//  Member
@@ -152,19 +153,19 @@ namespace meta
 	class Member
 	{
 	public:
-		Member::Member(std::string string, unsigned val, Type *meta) : name(string), offset(val), data(meta) {}
+		Member::Member(std::string string, unsigned val, TypeInfo *meta) : name(string), offset(val), data(meta) {}
 		Member::~Member() {}
 
 		const std::string &Name(void) const { return name; } 	// Gettor for name
 		unsigned Offset(void) const { return offset; };			// Gettor for offset
-		const Type *Meta(void) const { return data; };			// Gettor for data
+		const TypeInfo *Meta(void) const { return data; };			// Gettor for data
 		const std::string TypeName() const { return data->Name(); }
 		int Size() const { return data->Size(); }
 
 	private:
 		std::string name;
 		unsigned offset;
-		const Type *data;
+		const TypeInfo *data;
 	};
 
 
@@ -183,10 +184,10 @@ namespace meta
 			ConstPointer, 
 		};
 
-		const Type* type; //!< The type encoded
+		const TypeInfo* type; //!< The type encoded
 		Qualifier qualifier; //!< Qualifier to the type denoting access pattern
 
-		TypeRecord(const Type* t, Qualifier q) : type(t), qualifier(q) { }
+		TypeRecord(const TypeInfo* t, Qualifier q) : type(t), qualifier(q) { }
 		TypeRecord() : type(nullptr), qualifier(Void) { }
 	};
 
@@ -196,35 +197,35 @@ namespace meta
 		template <typename Type> 
 		struct make_type_record 
 		{ 
-			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Value); } 
+			static const TypeRecord type() { return TypeRecord(get<Type>(), TypeRecord::Value); } 
 		};
 
 		//Construct a TypeRecord for a specific type by pointer
 		template <typename Type> 
 		struct make_type_record<Type*> 
 		{ 
-			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Pointer); } 
+			static const TypeRecord type() { return TypeRecord(get<Type>(), TypeRecord::Pointer); } 
 		};
 
 		//Construct a TypeRecord for a specific type by const pointer
 		template <typename Type> 
 		struct make_type_record<const Type*> 
 		{ 
-			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::ConstPointer); } 
+			static const TypeRecord type() { return TypeRecord(get<Type>(), TypeRecord::ConstPointer); } 
 		};
 
 		//Construct a TypeRecord for a specific type by reference
 		template <typename Type> 
 		struct make_type_record<Type&>
 		{
-			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::Pointer); } 
+			static const TypeRecord type() { return TypeRecord(get<Type>(), TypeRecord::Pointer); } 
 		};
 
 		//Construct a TypeRecord for a specific type by const reference
 		template <typename Type> 
 		struct make_type_record<const Type&> 
 		{ 
-			static const TypeRecord type() { return TypeRecord(Get<Type>(), TypeRecord::ConstPointer); } 
+			static const TypeRecord type() { return TypeRecord(get<Type>(), TypeRecord::ConstPointer); } 
 		};
 
 		//Construct a TypeRecord for void
@@ -250,10 +251,10 @@ namespace meta
 	class Meta
 	{
 	public:
-		typedef std::unordered_map<std::string, Type *> MetaMap;
+		typedef std::unordered_map<std::string, TypeInfo *> MetaMap;
 
 		// Insert a MetaData into the map of objects
-		static void RegisterMeta(Type *instance)
+		static void RegisterMeta(TypeInfo *instance)
 		{
 			std::pair<MetaMap::iterator, bool> result = GetMap().insert(std::make_pair(instance->Name(), instance));
 			assert(result.second == true); //if false, already existed
@@ -265,7 +266,7 @@ namespace meta
 		}
 
 		// Retrieve a MetaData instance by string name from the map of MetaData objects
-		static Type* Get(std::string name) // NULL if not found
+		static TypeInfo* Get(std::string name) // NULL if not found
 		{
 			if (GetMap().count(name) > 0)
 			{
@@ -295,19 +296,19 @@ namespace meta
 
 	//registers a type.
 	//Defines RegisterMetaData for the TypeCreator, so this must be followed by {}.
-#define meta_define(TYPE) \
+	#define meta_define(TYPE) \
 		namespace namespace_for_meta_types {																									\
 			meta::TypeCreator<meta::RemoveQualifiers<TYPE>::type> NAME_GENERATOR()(#TYPE, sizeof(TYPE));										\
 		}																																		\
 		meta::RemoveQualifiersPtr<TYPE>::type* TYPE::NullCast(void) { return reinterpret_cast<meta::RemoveQualifiers<TYPE>::type *>(NULL); }	\
-		void TYPE::AddMember(std::string name, unsigned offset, meta::Type *data) { return meta::TypeCreator<meta::RemoveQualifiersPtr<TYPE>::type>::AddMember(name, offset, data); } \
+		void TYPE::AddMember(std::string name, unsigned offset, meta::TypeInfo *data) { return meta::TypeCreator<meta::RemoveQualifiersPtr<TYPE>::type>::AddMember(name, offset, data); } \
 		void meta::TypeCreator<meta::RemoveQualifiersPtr<TYPE>::type>::RegisterMetaData(void) { TYPE::RegisterMetaData(); }						\
 		void TYPE::RegisterMetaData(void) //define after this
 
 
 	//Allows RegisterMetaData (in meta_define) to get access to private members.
 	#define meta_expose_internal(TYPE) \
-		static void AddMember(std::string name, unsigned offset, meta::Type* data);		\
+		static void AddMember(std::string name, unsigned offset, meta::TypeInfo* data);		\
 		static meta::RemoveQualifiers<TYPE>::type* NullCast(void);						\
 		static void TYPE::RegisterMetaData(void);
 
@@ -359,26 +360,26 @@ namespace meta
 
 	//Get meta directly by type
 	template<typename T>
-	static Type* get()
+	static TypeInfo* get()
 	{
 		return meta::TypeCreator<RemoveQualifiers<T>::type>::Get();
 	}
 
 	//get meta about an object's type
 	template<typename T>
-	static Type* get(const T& object)
+	static TypeInfo* get(const T& object)
 	{
 		return meta::TypeCreator<RemoveQualifiers<T>::type>::Get();
 	}
 
 	//get meta about an object by name
-	static Type* get_name(const std::string& str)
+	static TypeInfo* get_name(const std::string& str)
 	{
 		return Meta::Get(str);
 	}
 
 	//get meta about an object by name
-	static Type* get_name(const char* str)
+	static TypeInfo* get_name(const char* str)
 	{
 		return Meta::Get(str);
 	}
@@ -387,9 +388,9 @@ namespace meta
 	//Friend function to initialize Type.
 	// A: InitType won't show up in Type as public function.
 	// B: Constructor for InitType called in singleton function.
-	void InitType(Type* type, std::string& string, unsigned val);
+	void InitType(TypeInfo* type, std::string& string, unsigned val);
 
-	extern std::vector<Type> allTypesStorage;
+	extern std::vector<TypeInfo> allTypesStorage;
 
 }
 

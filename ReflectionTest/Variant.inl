@@ -22,7 +22,7 @@ namespace meta
 		template <typename TYPE>
 		Variant& operator=(const TYPE& rhs)
 		{
-			Type* type = meta::get<TYPE>();
+			TypeInfo* type = meta::get<TYPE>();
 
 			// We require a new copy if meta does not match!
 			if (meta != type)
@@ -58,7 +58,7 @@ namespace meta
 		}
 
 	private:
-		const meta::Type* meta;
+		const meta::TypeInfo* meta;
 		void* data;
 	};
 
@@ -82,7 +82,7 @@ namespace meta
 		template <typename TYPE>
 		RefVariant& operator=(const TYPE& rhs)
 		{
-			Type* type = meta::get<TYPE>();
+			TypeInfo* type = meta::get<TYPE>();
 
 			// We require a new copy if meta does not match!
 			if (meta != type)
@@ -111,7 +111,7 @@ namespace meta
 		}
 
 	private:
-		const meta::Type* meta;
+		const meta::TypeInfo* meta;
 		void* reference;
 	};
 }

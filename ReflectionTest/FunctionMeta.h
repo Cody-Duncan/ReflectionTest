@@ -5,16 +5,16 @@ namespace meta
 	struct FunctionSignature
 	{
 		const unsigned argCount;
-		const Type** argArray;
-		const Type* returnType;
-		const Type* context;
+		const TypeInfo** argArray;
+		const TypeInfo* returnType;
+		const TypeInfo* context;
 
 		class Method
 		{
 			const char* m_Name;
-			const Type* m_Owner;
+			const TypeInfo* m_Owner;
 
-			void SetOwner(const Type* m_Type) { m_Owner = m_Type; }
+			void SetOwner(const TypeInfo* m_Type) { m_Owner = m_Type; }
 
 		protected:
 			Method(const char* name) : m_Name(name) {}
@@ -29,7 +29,7 @@ namespace meta
 			context(NULL),
 			argCount(sizeof...(Args))
 		{
-			static const Type* stat_args[sizeof...(Args)] =
+			static const TypeInfo* stat_args[sizeof...(Args)] =
 			{
 				meta::get<Args>()... //expands to meta::get<Arg_0>(), meta::get<Arg_1>(), and so on
 			};
@@ -43,13 +43,12 @@ namespace meta
 			context(meta::get<contextType>()),
 			argCount(sizeof...(Args))
 		{
-			static const Type* stat_args[sizeof...(Args)] =
+			static const TypeInfo* stat_args[sizeof...(Args)] =
 			{
 				meta::get<Args>()... //expands to meta::get<Arg_0>(), meta::get<Arg_1>(), and so on
 			};
 			argArray = stat_args;
 		}
-
 	};
 
 #define CALL_PTR(PTR, FN) ((PTR)->*(FN))

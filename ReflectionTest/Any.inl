@@ -8,9 +8,9 @@ namespace meta
 	private:
 		union
 		{
-			double  _align_me; //!< force allignment
-			char   m_Data[4 * sizeof(float)]; //!< large enough for 4 floats, e.g. a vec4
-			void*  m_Ptr; //!< convenien
+			double  _align_me;				  //!< force allignment
+			char   m_Data[32];				  //!< large enough for 4 floats, e.g. a vec4
+			void*  m_Ptr;					  //!< convenient
 		};
 
 		TypeRecord m_TypeRecord;
@@ -20,8 +20,8 @@ namespace meta
 		Mover m_Mover;
 
 		// Non-Copyable
-		Any(const Any&); // = delete
-		void operator=(const Any&); // = delete
+		Any(const Any&);		
+		void operator=(const Any&); 
 
 	public:
 
@@ -89,7 +89,7 @@ namespace meta
 
 		bool IsConst() const { return m_TypeRecord.qualifier != TypeRecord::Pointer; }
 
-		const Type* GetType() const { return m_TypeRecord.type; }
+		const TypeInfo* GetType() const { return m_TypeRecord.type; }
 
 		const TypeRecord& GetTypeRecord() const { return m_TypeRecord; }
 
@@ -105,20 +105,29 @@ namespace meta
 			}
 		}
 
-		inline void* GetPointer(const Type* type) const;
+		inline void* GetPointer(const TypeInfo* type) const;
 
 		template <typename T> T* GetPointer() const 
 		{ 
-			return static_cast<T*>( GetPointer(Get<T>()) ); 
+			//return static_cast<T*>( GetPointer( get<T>() ) );
+			return static_cast<T*>( GetPointer() ); 
 		}
 
 		template <typename T> T& GetReference() const 
 		{ 
-			return *static_cast<T*>(GetPointer(Get<T>()));
+			//return *static_cast<T*>(GetPointer(get<T>()));
+			return *static_cast<T*>( GetPointer() );
 		}
 
 		template <typename Type> friend struct internal::make_any;
 	};
+
+	inline void* Any::GetPointer(const TypeInfo* type) const
+	{
+		//return m_TypeRecord.type->Adjust(type, GetPointer());
+		assert(false);
+		return nullptr;
+	}
 
 	namespace internal
 	{

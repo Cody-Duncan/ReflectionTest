@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FunctionMeta.h" />
+    <ClInclude Include="FunctionMeta2.h" />
     <ClInclude Include="FunctionTest.h" />
     <ClInclude Include="indices.h" />
     <ClInclude Include="MacroHelpers.h" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FunctionMain.cpp" />
+    <ClCompile Include="FunctionMeta2.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Meta.cpp" />
     <ClCompile Include="SerializationTest.cpp" />

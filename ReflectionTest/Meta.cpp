@@ -2,15 +2,15 @@
 
 namespace meta
 {
-	void Type::AddMember(const Member *member)
+	void TypeInfo::AddMember(const Member *member)
 	{
 		members.push_back(member);
 		mamberNames.insert(std::make_pair(member->Name(), member));
 	}
 
-	std::vector<Type> allTypesStorage(200);
+	std::vector<TypeInfo> allTypesStorage(200);
 
-	void InitType(Type* type, std::string& string, unsigned val)
+	void InitType(TypeInfo* type, std::string& string, unsigned val)
 	{
 		type->name = string;
 		type->size = val;
