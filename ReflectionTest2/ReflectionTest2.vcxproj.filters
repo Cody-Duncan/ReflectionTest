@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Meta.h" />
+    <ClInclude Include="TypeRecord.h" />
+    <ClInclude Include="Any.h" />
+    <ClInclude Include="Indices.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Any.cpp" />
+    <ClCompile Include="Meta.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Meta.inl" />
+  </ItemGroup>
+</Project>

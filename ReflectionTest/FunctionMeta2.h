@@ -77,16 +77,6 @@ namespace meta
 			return Call(method, obj, argc, argv, build_indices<sizeof...(Args)>{});
 		}
 
-		/*
-		template <typename Type, typename ReturnType, typename... Args> struct do_call0
-		{
-			static Any Call( ReturnType (Type::*method)(Args...), Type* obj, int argc, const Any* argv)
-			{
-				return internal::make_any<ReturnType>::make((obj->*method)());
-			}
-		};
-		*/
-
 		template<typename Type, typename ReturnType, typename... Args>
 		class VarMethod : public Method
 		{

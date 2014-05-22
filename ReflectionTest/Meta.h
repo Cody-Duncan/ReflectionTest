@@ -38,6 +38,16 @@ namespace meta
 		{
 			static void move(void* dst, void* src) { new (dst)Type(*static_cast<Type*>(src)); }
 		};
+
+		//! \brief Records information about a base type.
+		struct BaseRecord
+		{
+			BaseRecord(const TypeInfo* t, ptrdiff_t o) : type(t), offset(o)
+			{}
+
+			const TypeInfo* type; //!< The type being used
+			ptrdiff_t offset;	  //<! Offset that must be applied to convert a pointer from the deriving type to this base
+		};
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -46,12 +56,21 @@ namespace meta
 	
 	class TypeInfo
 	{
+	private:
+		friend void InitType(TypeInfo* type, std::string& string, unsigned val);
+
+		std::string name;
+		unsigned size;
+
+	protected:
+		std::vector<internal::BaseRecord> m_Bases; //!< The list of base types.
+
 	public:
 		TypeInfo() {}
 		~TypeInfo() {};
 
 		const std::string& Name(void) const { return name; }
-		unsigned Size(void) const { return size; }
+		unsigned		   Size(void) const { return size; }
 
 		void AddMember(const Member *member);
 
@@ -81,11 +100,39 @@ namespace meta
 			return new char[size];
 		}
 
-	private:
-		friend void InitType(TypeInfo* type, std::string& string, unsigned val);
+		///<summary> Adjust a pointer of this type to a derived type. </summary>
+		///<param name="base"> The base type to convert to. </param>
+		///<param name="ptr"> The pointer to convert. </param>
+		///<return>The adjusted pointer, or nullptr if the adjustment is illegal (the given base type is not a base of the type).</return>
+		void* Adjust(const TypeInfo* base, void* ptr) const
+		{
+			if (base == this)
+				return ptr;
 
-		std::string name;
-		unsigned size;
+			for (int i = 0; i < m_Bases.size(); ++i)
+			{
+				const meta::internal::BaseRecord& b = m_Bases[i];
+
+				void* rs = b.type->Adjust(base, static_cast<char*>(ptr)+b.offset);
+				if (rs != nullptr)
+				{
+					return rs;
+				}
+			}
+
+			return nullptr;
+		}
+
+		//! \brief Adjust a pointer of this type to a derived type.
+		//! \param base The base type to convert to.
+		//! \param ptr The pointer to convert.
+		//! \returns The adjusted pointer, or nullptr if the adjustment is illegal (the given base type is not a base of the type).
+		const void* Adjust(const TypeInfo* base, const void* ptr) const
+		{
+			return Adjust(base, const_cast<void*>(ptr));
+		}
+
+	
 	};
 
 	
