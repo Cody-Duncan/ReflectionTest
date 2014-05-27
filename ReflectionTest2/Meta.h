@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <assert.h>
 #include "Any.h"
 #include "Indices.h"
 
@@ -16,9 +16,9 @@ namespace meta
 	// Represents a member variable of a type. */
 	class Member
 	{
-		const char* m_Name; // The name of this variable.
+		const char* m_Name;		 // The name of this variable.
 		const TypeInfo* m_Owner; // The type this member variable belongs to.
-		const TypeInfo* m_Type; // The type of this member variable.
+		const TypeInfo* m_Type;  // The type of this member variable.
 
 	protected:
 
@@ -57,6 +57,7 @@ namespace meta
 		virtual bool IsMutable() const = 0;
 
 		const char* GetName() const { return m_Name; }
+		const std::string GetNameStr() const { return std::string(m_Name); }
 
 		// Retrieves the type of the member variable.
 		const TypeInfo* GetType() const { return m_Type; }
@@ -133,14 +134,14 @@ namespace meta
 		/// Override to implement calling the method.
 		/// </summary>
 		/// <param name="obj">The memory location of an instance of the owner object.</param>
-		/// <param name="argc"> The number of arguments to pass in to the method.</param>
 		/// <param name="argv">A list of any references for the arguments.</param>
 		/// <returns> The return value as an Any</returns>
-		virtual Any DoCall(const Any& obj, int argc, const Any* argv) const = 0;
+		virtual Any DoCall(const Any& obj, const Any* argv) const = 0;
 
 	public:
 
 		const char*     GetName() const { return m_Name; }
+		const std::string GetNameStr() const { return std::string(m_Name); }
 		const TypeInfo* GetOwner() const { return m_Owner; }
 
 		// Get the TypeInfo of the return value.
@@ -159,13 +160,31 @@ namespace meta
 		virtual int GetArity() const = 0;
 
 		/// <summary>
-		/// Invoke the method (with a return value).
+		/// Invoke the method.
 		/// </summary>
 		/// <param name="obj"> The instance of the object to call the method on.</param>
 		/// <param name="argc">The number of arguments to pass in to the method.</param>
 		/// <param name="argv">A list of any references for the arguments.</param>
-		/// <returns>The return value as an Any</returns>
-		inline Any Call(const Any& obj, int argc, const Any* argv) const;
+		/// <returns>The return value as an Any (can be void)</returns>
+		inline Any Call(const Any& obj, const Any* argv) const;
+
+		/// <summary>
+		/// Invoke a method. Convienient syntax for passing in args:  func(a, b, c...)
+		/// </summary>
+		template<class T, typename... Args> Any Call(T& obj, Args... args) const;
+
+		/// <summary>
+		/// Invoke a method.
+		/// </summary>
+		/// <remarks> This overload redirects a call given an object and an Any[] of args. (Wraps obj in Any) </remarks>
+		template<class T> Any Call(T& obj, const Any* argv) const;
+		template<class T> Any Call(T& obj, Any* argv) const; //same as above with no const
+
+		/// <summary>
+		/// Invoke a method. Convienient syntax for a zero arg function: func()
+		/// </summary>
+		/// <remarks> This overload is for methods with no arguments</remarks>
+		template<class T> Any Call(T& obj);
 
 		/// <summary>
 		/// Determine if a method can be invoked.
@@ -175,6 +194,12 @@ namespace meta
 		/// <param name="argv">A list of any references for the arguments.</param>
 		/// <returns>True if the parameters are valid for a call to succeed.</returns>
 		inline bool CanCall(const Any& obj, int argc, const Any* argv) const;
+
+		//overload for variadic template forwarding
+		template<class T, typename... Args> bool CanCall(T& obj, Args... args) const;
+
+		//overload for no args
+		template<class T> bool CanCall(T& obj);
 
 		friend class TypeInfo;
 	};
@@ -186,7 +211,10 @@ namespace meta
 	//  TypeInfo
 	//////////////////////////////////////////////////////////////////////////////
 
-	// Information about a type.
+	/// <summary>
+	/// <para>Information about a type. </para>
+	/// <para> (Name, Size, IsDerivedFrom, IsSameOrDerivedFrom, FindMember, FindMethod) </para>
+	/// </summary>
 	class TypeInfo
 	{
 	private:
@@ -210,16 +238,18 @@ namespace meta
 
 			// trim off the namespaces from the name; 
 			// account for possible template specializations
-			for (const char* m_Name = name + std::strlen(name) - 1; m_Name != name; --m_Name)
+			const char* trimmedName;
+			for (trimmedName = name + std::strlen(name) - 1; trimmedName != name; --trimmedName)
 			{
-				if (*m_Name == '>')
+				if (*trimmedName == '>')
 					++nested;
-				else if (*m_Name == '<')
+				else if (*trimmedName == '<')
 					--nested;
-				else if (nested == 0 && *m_Name == ':')
+				else if (nested == 0 && *trimmedName == ':')
 					break;
 			}
 
+			this->m_Name = trimmedName;
 			byteSize = size;
 		}
 
@@ -242,7 +272,12 @@ namespace meta
 		}
 
 		const char* GetName() const { return m_Name; }
+		const std::string GetNameStr() const { return std::string(m_Name); }
 		const size_t GetSize() const { return byteSize; }
+
+		const std::vector<internal::BaseRecord>& GetBases() const { return m_Bases; }
+		const std::vector<Member*> & GetMembers() const { return m_Members; }
+		const std::vector<Method*>& GetMethods() const { return m_Methods; }
 
 		/// <summary>
 		/// Determines whether Tests if this type is derived from the specified type.
@@ -294,6 +329,9 @@ namespace meta
 					return rs;
 			}
 
+			//LogError( "Called GetReference or GetPointerusing a type that doesn't match, or isn't convertable from the value stored by this Any.
+			//  The type is %s", base->GetName());
+			
 			return nullptr;
 		}
 
@@ -404,31 +442,39 @@ namespace meta
 	// *********************** Variadic Call (Method) Implementation *********************** 
 	namespace internal
 	{
+		//Call_Internal - The final destination for a Call on a method. Actually calls the method.
 		
 		template <typename Type, typename ReturnType, typename... Args, unsigned int... Is>
-		Any Call_Internal( ReturnType(Type::*method)(Args...), Type* obj, int argc, const Any* argv, indices<Is...> )
+		Any Call_Internal( ReturnType(Type::*method)(Args...), Type* obj, const Any* argv, indices<Is...> )
 		{
 			return internal::make_any<ReturnType>::make( (obj->*method)( *argv[Is].GetPointer<Args>()... ) );
 		}
 
 		template <typename Type, typename... Args, unsigned int... Is>
-		void Call_Internal( void (Type::*method)(Args...), Type* obj, int argc, const Any* argv, indices<Is...> )
+		void Call_Internal( void (Type::*method)(Args...), Type* obj, const Any* argv, indices<Is...> )
 		{
 			return  (obj->*method)( *argv[Is].GetPointer<Args>()... );
 		}
 
+
+		//Call - forwards a call to Call_Internal, generating a variadic non-type template containing the indices for the arguments.
+		// Uses what seems to get dubbed "The indices trick". 
+
 		template <typename Type, typename ReturnType, typename... Args>
-		Any Call(ReturnType(Type::*method)(Args...), Type* obj, int argc, const Any* argv)
+		Any Call(ReturnType(Type::*method)(Args...), Type* obj, const Any* argv)
 		{
-			return Call_Internal(method, obj, argc, argv, build_indices<sizeof...(Args)>{});
+			assert((sizeof...(Args) > 0 && argv != nullptr) ||		// if has args, must not have null argv.
+				(sizeof...(Args) == 0 && argv == nullptr));			// if no args, must have null argv.
+			return Call_Internal(method, obj, argv, build_indices<sizeof...(Args)>{});
 		}
 
 		template <typename Type, typename... Args>
-		void Call(void (Type::*method)(Args...), Type* obj, int argc, const Any* argv)
+		void Call(void (Type::*method)(Args...), Type* obj, const Any* argv)
 		{
-			return Call_Internal(method, obj, argc, argv, build_indices<sizeof...(Args)>{});
+			assert((sizeof...(Args) > 0 && argv != nullptr) ||		// if has args, must not have null argv.
+				(sizeof...(Args) == 0 && argv == nullptr));			// if no args, must have null argv.
+			return Call_Internal(method, obj, argv, build_indices<sizeof...(Args)>{});
 		}
-
 		
 		/// <summary>
 		/// Variadic Method that can accept any args, and a return type.
@@ -440,21 +486,24 @@ namespace meta
 		public:
 			
 			virtual TypeRecord GetReturnType() const override { return internal::make_type_record<ReturnType>::type(); }
-			virtual TypeRecord GetParamType(int i) const override { return TypeRecord(); }
+			virtual TypeRecord GetParamType(int i) const override 
+			{
+				return meta::internal::GetTypeRecordByIndex<sizeof...(Args), Args...>(i);
+			}
 			virtual int GetArity() const override { return sizeof...(Args); }
 
 			VarMethod(const char* name, ReturnType (Type::*method)(Args...)) : 
 				Method(name), 
 				method(method) {}
 			
-			virtual Any DoCall(const Any& obj, int argc, const Any* argv) const 
+			virtual Any DoCall(const Any& obj, const Any* argv) const 
 			{ 
-				return meta::internal::Call(method, obj.GetPointer<Type>(), argc, argv); 
+				return meta::internal::Call(method, obj.GetPointer<Type>(), argv); 
 			}
 		};
 
 		/// <summary>
-		/// Variadic Method that can accept any args, and a void return type.
+		/// Variadic Method that can accept any args, and a void return.
 		/// </summary>
 		template<typename Type, typename... Args> class VarMethod<Type, void, Args...> : public Method
 		{
@@ -463,16 +512,19 @@ namespace meta
 		public:
 			
 			virtual TypeRecord GetReturnType() const override { return internal::make_type_record<void>::type(); }
-			virtual TypeRecord GetParamType(int i) const override { return TypeRecord(); }
+			virtual TypeRecord GetParamType(int i) const override 
+			{
+				return meta::internal::GetTypeRecordByIndex<sizeof...(Args), Args...>(i);
+			}
 			virtual int GetArity() const override { return sizeof...(Args); }
 
 			VarMethod(const char* name, void (Type::*method)(Args...)) : 
 				Method(name), 
 				method(method) {}
 			
-			virtual Any DoCall(const Any& obj, int argc, const Any* argv) const 
+			virtual Any DoCall(const Any& obj, const Any* argv) const 
 			{ 
-				meta::internal::Call(method, obj.GetPointer<Type>(), argc, argv); 
+				meta::internal::Call(method, obj.GetPointer<Type>(), argv); 
 				return Any();
 			}
 		};
@@ -507,15 +559,23 @@ namespace meta
 
 	namespace internal
 	{
-		template <typename Type, bool IsClass> 
-		struct TypedInfo : public TypeInfo
+		
+		/// <summary>
+		/// TypeInfo object that is created using the Builder Pattern. 
+		/// <code> 
+		/// <para> meta_DEFINE(Class) </para>
+		/// <para>	  .member("a", &amp;Class&#58;&#58;a) </para>
+		/// <para>	  .method("foo", &amp;Class&#58;&#58;foo) </para>
+		/// </code>
+		/// </summary>
+		template <typename Type, bool IsClass> struct TypeInfoBuilder : public TypeInfo
 		{
 			//! \brief Construct the type.
-			TypedInfo(const char* name, size_t size) : TypeInfo(name, size)
+			TypeInfoBuilder(const char* name, size_t size) : TypeInfo(name, size)
 			{}
 
 			//! \brief Add a base to this type.
-			template <typename BaseType> TypedInfo& base()
+			template <typename BaseType> TypeInfoBuilder& base()
 			{
 				static_assert(std::is_base_of<BaseType, Type>::value && !std::is_same<BaseType, Type>::value, "incorrect base"); 
 				m_Bases.push_back(BaseRecord(Get<BaseType>(), reinterpret_cast<ptrdiff_t>(static_cast<const BaseType*>(reinterpret_cast<const Type*>(0x1000))) - 0x1000)); 
@@ -529,31 +589,35 @@ namespace meta
 			/// <param name="member">A pointer to the member.</param>
 			/// <returns></returns>
 			template <typename MemberType> 
-			typename std::enable_if<!std::is_member_function_pointer<MemberType>::value, TypedInfo&>::type member(const char* name, MemberType Type::*member)
+			typename std::enable_if<!std::is_member_function_pointer<MemberType>::value, TypeInfoBuilder&>::type member(const char* name, MemberType Type::*member)
 			{
 				m_Members.push_back(new TypeMember<Type, typename std::remove_reference<MemberType>::type>(name, Get<MemberType>(), member)); return *this;
 			}
 
-			// add method definitions for a m_Type
-			template<typename Type, typename ReturnType, typename... Args>
-			TypedInfo& method(const char* name, ReturnType(Type::*method)(Args...))
+			/// <summary>
+			/// Add a method definition to this type.
+			/// </summary>
+			/// <param name="name">The name of the method.</param>
+			/// <param name="method">A pointer to the member ( &Type::method ).</param>
+			/// <returns></returns>
+			template<typename Type, typename ReturnType, typename... Args> TypeInfoBuilder& method(const char* name, ReturnType(Type::*method)(Args...))
 			{
 				m_Methods.push_back(bindMethod(name, method)); 
 				return *this;
 			}
 		};
 
-		template <typename Type> struct TypedInfo<Type*, true> : public TypeInfo
+		// TypeInfoBuilder - Pointer types (for c-string types)
+		template <typename Type> struct TypeInfoBuilder<Type*, true> : public TypeInfo
 		{
-			TypedInfo(const char* name, size_t size) : TypeInfo(name, size)
+			TypeInfoBuilder(const char* name, size_t size) : TypeInfo(name, size)
 			{}
 		};
 
-		// Utility class to initialize a TypeInfo, invoked by META_DEFINE_EXTERN, 
-		// but which cannot have base types, member variables, or member functions (e.g. primitive types).
-		template <typename Type> struct TypedInfo<Type, false> : public TypeInfo
+		// TypeInfoBuilder - Primitives and other classes that cannot have base types, member variables, or member functions.
+		template <typename Type> struct TypeInfoBuilder<Type, false> : public TypeInfo
 		{
-			TypedInfo(const char* name, size_t size) : TypeInfo(name, size)
+			TypeInfoBuilder(const char* name, size_t size) : TypeInfo(name, size)
 			{}
 		};
 	}
@@ -568,8 +632,8 @@ namespace meta
 
 // Put outside of any declaration to begin annotating a type.
 // T - The type to annotate.
-#define meta_DEFINE_EXTERN(T) template<> const meta::TypeInfo meta::internal::MetaHolder<T>::s_TypeInfo = ::meta::internal::TypedInfo<T, !std::is_fundamental<T>::value>(#T , sizeof(T))
+#define meta_DEFINE_EXTERN(T) template<> const meta::TypeInfo meta::internal::MetaHolder<T>::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, !std::is_fundamental<T>::value>(#T , sizeof(T))
 
 // Put outside of any declaration to begin annotating a type marked up with META_DECLARE(T)
 //T - The type to annotate.
-#define meta_DEFINE(T) const ::meta::TypeInfo T::MetaStaticHolder::s_TypeInfo = ::meta::internal::TypedInfo<T, true>(#T, sizeof(T))
+#define meta_DEFINE(T) const ::meta::TypeInfo T::MetaStaticHolder::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, true>(#T, sizeof(T))

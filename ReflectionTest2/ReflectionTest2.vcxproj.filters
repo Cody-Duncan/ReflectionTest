@@ -8,7 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Any.cpp" />
     <ClCompile Include="Meta.cpp" />
   </ItemGroup>
   <ItemGroup>

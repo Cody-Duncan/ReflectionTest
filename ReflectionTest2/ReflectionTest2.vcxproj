@@ -84,7 +84,6 @@
     <ClInclude Include="TypeRecord.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Any.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Meta.cpp" />
   </ItemGroup>

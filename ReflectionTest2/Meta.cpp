@@ -1,9 +1,7 @@
 #include "Meta.h"
 
-namespace meta
-{
-	
-}
+//special definition for void
+const meta::TypeInfo meta::internal::MetaHolder<void>::s_TypeInfo = ::meta::internal::TypeInfoBuilder<void, false>("void", 0);
 
 meta_DEFINE_EXTERN(bool);
 meta_DEFINE_EXTERN(int);

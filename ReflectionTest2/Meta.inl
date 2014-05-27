@@ -38,20 +38,50 @@ void Member::Set(const Any& obj, const Any& in) const
 
 //*********  Method  *********//
 
-Any Method::Call(const Any& obj, int argc, const Any* argv) const
+Any Method::Call(const Any& obj, const Any* argv) const
 {
-	return DoCall(obj, argc, argv);
+	return DoCall(obj, argv);
+}
+
+template<class T, typename... Args>
+Any Method::Call(T& obj, Args... args) const
+{
+	Any argArray[] =
+	{
+		args...
+	};
+	return DoCall(obj, argArray);
+}
+
+template<class T> 
+Any Method::Call(T& obj, const Any* argv) const
+{
+	return DoCall(Any(obj), argv);
+}
+
+template<class T> 
+Any Method::Call(T& obj, Any* argv) const
+{
+	return DoCall(Any(obj), argv);
+}
+
+template<class T>
+Any Method::Call(T& obj) //must be inline (or put in cpp file) because all types are known, so it upgrades to a regular function
+{
+	return DoCall(obj, nullptr);
 }
 
 bool Method::CanCall(const Any& obj, int argc, const Any* argv) const
 {
 	if(!obj.GetType()->IsSameOrDerivedFrom(m_Owner))
 	{
+		//LogError("Cannot call method. Object checked is not the same or derived from the class type this method is apart of.");
 		return false;
 	}
 
 	if(argc != GetArity())
 	{
+		//LogError("Cannot call method. Methods has %d args, asked if method has %d args.", GetArity(), argc);
 		return false;
 	}
 
@@ -60,12 +90,28 @@ bool Method::CanCall(const Any& obj, int argc, const Any* argv) const
 		auto tr = GetParamType(i);
 		if(argv[i].GetType() != tr.type)
 		{
+			//LogError("Arguement %d type is %s. Expected type of %s.", i, argv[i].GetType()->GetName(), tr.type->GetName());
 			return false;
 		}
 		if(argv[i].IsConst() && tr.qualifier == TypeRecord::Pointer)
 		{
+			//LogError("Arguement %d type is %s. Expected type of %s.", i, argv[i].GetType()->GetName(), tr.type->GetName());
 			return false;
 		}
 	}
 	return true;
+}
+
+template<class T, typename... Args> bool Method::CanCall(T& obj, Args... args) const
+{
+	Any argArray[] =
+	{
+		args...
+	};
+	return CanCall(Any(obj), sizeof...(Args), argArray);
+}
+
+template<class T> bool Method::CanCall(T& obj)
+{
+	return CanCall(Any(obj), 0, nullptr);
 }

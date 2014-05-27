@@ -16,7 +16,10 @@ namespace meta
 	//  Any
 	//////////////////////////////////////////////////////////////////////////////
 
-	// Holds any type of value that can be handled by the introspection system
+
+	/// <summary>
+	/// Holds any type of value that is registered with the introspection system.
+	/// </summary>
 	class Any
 	{
 	private:

@@ -10,6 +10,11 @@ namespace meta
 	{
 		template <typename T> struct MetaHolder;
 
+		template <> struct MetaHolder<void>
+		{
+			static const TypeInfo s_TypeInfo;
+		};
+
 		//! \brief Type trait to convert a possibly const reference or pointer to a non-const pointer
 		template <typename T> struct to_pointer
 		{
@@ -61,7 +66,7 @@ namespace meta
 		{
 			static const TypeInfo* Get()
 			{
-				return nullptr;
+				return &internal::MetaHolder<void>::s_TypeInfo;
 			}
 		};
 
@@ -112,31 +117,31 @@ namespace meta
 		};
 	}
 
-	/*! \brief Get the TypeInfo for a specific type. */
+	/* Get the TypeInfo for a specific type. */
 	template <typename Type> const TypeInfo* Get()
 	{
 		return internal::meta_lookup<Type, internal::has_inline_meta<Type>::value>::Get();
 	}
 
-	/*! \brief Get the TypeInfo for a specific instance supporting a GetMeta() method, usually used/needed in polymorphic interfaces. */
+	/* Get the TypeInfo for a specific instance supporting a GetMeta() method, usually used/needed in polymorphic interfaces. */
 	template <typename Type> typename std::enable_if< internal::has_get_meta<Type>::value, const TypeInfo*>::type Get(const Type* type)
 	{
 		return type->getMeta();
 	}
 
-	/*! \brief Get the TypeInfo for a specific instance which has no GetMeta() method and hence no support for polymorphism of introspection. */
+	/* Get the TypeInfo for a specific instance which has no GetMeta() method and hence no support for polymorphism of introspection. */
 	template <typename Type> typename std::enable_if<!internal::has_get_meta<Type>::value, const TypeInfo*>::type Get(const Type*)
 	{
 		return Get<Type>();
 	}
 
-	/*! \brief Get the TypeInfo for a specific instance supporting a GetMeta() method, usually used/needed in polymorphic interfaces. */
+	/* Get the TypeInfo for a specific instance supporting a GetMeta() method, usually used/needed in polymorphic interfaces. */
 	template <typename Type> typename std::enable_if<!std::is_pointer<Type>::value && internal::has_get_meta<Type>::value, const TypeInfo*>::type Get(const Type& type)
 	{
 		return type.getMeta();
 	}
 
-	/*! \brief Get the TypeInfo for a specific instance which has no GetMeta() method and hence no support for polymorphism of introspection. */
+	/* Get the TypeInfo for a specific instance which has no GetMeta() method and hence no support for polymorphism of introspection. */
 	template <typename Type> typename std::enable_if<!std::is_pointer<Type>::value && !internal::has_get_meta<Type>::value, const TypeInfo*>::type Get(const Type&)
 	{
 		return Get<Type>();
@@ -225,8 +230,31 @@ namespace meta
 		{
 			static const TypeRecord type()
 			{
-				return TypeRecord(nullptr, TypeRecord::Void);
+				return TypeRecord(Get<void>(), TypeRecord::Void);
 			}
 		};
+
+		
+
+		template<int size, typename... Args>
+		TypeRecord GetTypeRecordByIndex(int i)
+		{
+			if(i >= 0 && i < sizeof...(Args))
+			{
+				meta::TypeRecord argRecords[] = {
+					internal::make_type_record<Args>::type()...,
+				};
+				return argRecords[i];
+			}
+				
+			return TypeRecord();
+		}
+
+		template<>
+		inline TypeRecord GetTypeRecordByIndex<0>(int i) //must be inline (or put in cpp file) because all types are known, so it upgrades to a regular function
+		{
+			return TypeRecord();
+		}
+
 	}
 }
