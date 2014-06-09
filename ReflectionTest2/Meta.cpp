@@ -1,8 +1,11 @@
 #include "Meta.h"
 
+std::unordered_map<std::string, meta::TypeInfo*>* meta::TypeInfo::sTypeInfoDictionary = nullptr;
+
 //special definition for void
 const meta::TypeInfo meta::internal::MetaHolder<void>::s_TypeInfo = ::meta::internal::TypeInfoBuilder<void, false>("void", 0);
 
+meta_DEFINE_EXTERN(std::string);
 meta_DEFINE_EXTERN(bool);
 meta_DEFINE_EXTERN(int);
 meta_DEFINE_EXTERN(unsigned int);

@@ -26,7 +26,7 @@ namespace meta
 		union
 		{
 			double _align_me;				// force allignment
-			char m_Data[4 * sizeof(float)]; // large enough for 4 floats, e.g. a vec4
+			char m_Data[8 * sizeof(float)]; // large enough for 8 floats
 			void* m_Ptr;					// convenient
 		};
 		TypeRecord m_TypeRecord;			// Type record information stored in this Any
@@ -69,17 +69,29 @@ namespace meta
 		}
 
 		// Constucts an Any that contains an object
-		template <typename Type> Any(const Type& obj) : m_TypeRecord(internal::make_type_record<Type>::type()), m_Destructor(&internal::destructor<Type>::destruct), m_Mover(&internal::mover<Type>::move)
+		template <typename Type> Any(const Type& obj) : 
+			m_TypeRecord(internal::make_type_record<Type>::type()), 
+			m_Destructor(&internal::destructor<Type>::destruct),
+			m_Mover(&internal::mover<Type>::move)
 		{
-			static_assert(sizeof(Type) <= sizeof(m_Data), "Type is too large"); new (m_Data)Type(obj);
+			static_assert(sizeof(Type) <= sizeof(m_Data), "Type is too large"); 
+			new (m_Data)Type(obj);
 		}
 
 		// Constucts an Any that points at a non-const object
-		template <typename Type> Any(Type* obj) : m_Ptr(obj), m_TypeRecord(internal::make_type_record<Type*>::type()), m_Destructor(nullptr), m_Mover(&internal::mover<Type*>::move)
+		template <typename Type> Any(Type* obj) : 
+			m_Ptr(obj), 
+			m_TypeRecord(internal::make_type_record<Type*>::type()), 
+			m_Destructor(nullptr), 
+			m_Mover(&internal::mover<Type*>::move)
 		{}
 
 		// Constucts an Any that points at a const object
-		template <typename Type> Any(const Type* obj) : m_Ptr(const_cast<Type*>(obj)), m_TypeRecord(internal::make_type_record<const Type*>::type()), m_Destructor(nullptr), m_Mover(&internal::mover<const Type*>::move)
+		template <typename Type> Any(const Type* obj) : 
+			m_Ptr(const_cast<Type*>(obj)), 
+			m_TypeRecord(internal::make_type_record<const Type*>::type()), 
+			m_Destructor(nullptr), 
+			m_Mover(&internal::mover<const Type*>::move)
 		{}
 
 		// Cleans up the value stored in the Any if necessary

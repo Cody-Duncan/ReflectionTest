@@ -6,6 +6,16 @@ inline void* Any::GetPointer(const TypeInfo* type) const
 
 //*********  Member  *********//
 
+inline const char* Member::GetTypeName() const 
+{ 
+	return m_Type->GetName(); 
+}
+
+inline const std::string Member::GetTypeNameStr() const 
+{ 
+	return std::string(m_Type->GetName()); 
+}
+
 bool Member::CanGet(const Any& obj) const
 {
 	if (!obj.GetType()->IsSameOrDerivedFrom(m_Owner))

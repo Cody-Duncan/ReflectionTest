@@ -2,6 +2,7 @@
 #include "Meta.h"
 #include <assert.h>
 #include <iostream>
+#include "SerializationTest.h"
 
 // a test class
 class A1
@@ -104,6 +105,7 @@ void TestMeta_1()
 
 int main(int argc, const char* argv[])
 {
+	TestDeSerialization();
 	TestMeta_1();
 
 	std::cout << "any_cast and any(3) to int." << std::endl;

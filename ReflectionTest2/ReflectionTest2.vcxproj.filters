@@ -5,12 +5,23 @@
     <ClInclude Include="TypeRecord.h" />
     <ClInclude Include="Any.h" />
     <ClInclude Include="Indices.h" />
+    <ClInclude Include="SerializationTest.h">
+      <Filter>Test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Meta.cpp" />
+    <ClCompile Include="SerializationTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Meta.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Test">
+      <UniqueIdentifier>{5c3bcb6b-5780-4dee-ad5b-9fd356137dd4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

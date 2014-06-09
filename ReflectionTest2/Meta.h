@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "Any.h"
 #include "Indices.h"
+#include <unordered_map>
 
 namespace meta
 {
@@ -58,6 +59,8 @@ namespace meta
 
 		const char* GetName() const { return m_Name; }
 		const std::string GetNameStr() const { return std::string(m_Name); }
+		const char* GetTypeName() const; 
+		const std::string GetTypeNameStr() const;
 
 		// Retrieves the type of the member variable.
 		const TypeInfo* GetType() const { return m_Type; }
@@ -220,6 +223,7 @@ namespace meta
 	private:
 		const char* m_Name; // The name of the type.
 		size_t byteSize;
+		static std::unordered_map<std::string, TypeInfo*>* sTypeInfoDictionary;
 
 	protected:
 		std::vector<internal::BaseRecord> m_Bases; // The list of base types.
@@ -227,6 +231,16 @@ namespace meta
 		std::vector<Method*> m_Methods;            // The list of all methods of this type.
 
 	public:
+		
+		static std::unordered_map<std::string, TypeInfo*>& GetTypeInfoDictionary()
+		{
+			if(sTypeInfoDictionary == nullptr)
+			{
+				sTypeInfoDictionary = new std::unordered_map<std::string, TypeInfo*>();
+				sTypeInfoDictionary->rehash(256);
+			}
+			return *sTypeInfoDictionary;
+		}
 
 		/// <summary>
 		/// Constructor for <see cref="TypeInfo"/> class.
@@ -245,8 +259,11 @@ namespace meta
 					++nested;
 				else if (*trimmedName == '<')
 					--nested;
-				else if (nested == 0 && *trimmedName == ':')
+				else if(nested == 0 && *trimmedName == ':')
+				{
+					++trimmedName;
 					break;
+				}
 			}
 
 			this->m_Name = trimmedName;
@@ -375,6 +392,11 @@ namespace meta
 			return nullptr;
 		}
 
+		Member* FindMember(std::string& name) const
+		{
+			return FindMember(name.c_str());
+		}
+
 		/// <summary>
 		/// Find a method of this type or any base type.
 		/// </summary>
@@ -402,6 +424,49 @@ namespace meta
 			return nullptr;
 		}
 	};
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	//  StaticTypeInfo - Static TypeInfo objects that act as the base storage of metadata.
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	class StaticTypeInfo : public TypeInfo
+	{
+	public:
+		/// <summary>
+		/// Constructor for <see cref="TypeInfo"/> class.
+		/// </summary>
+		/// <param name="name">The name of the type.</param>
+		StaticTypeInfo(const char* name, size_t size)
+			:TypeInfo(name, size)
+		{
+			GetTypeInfoDictionary().insert( std::make_pair(GetNameStr(), this) );
+		}
+
+		/// <summary>
+		/// Copy constructor for <see cref="TypeInfo"/>.
+		/// </summary>
+		/// <param name="type">The typeinfo to copy.</param>
+		StaticTypeInfo(const TypeInfo& type) : 
+			TypeInfo(type)
+		{
+			GetTypeInfoDictionary().insert( std::make_pair(GetNameStr(), this) );
+		}
+	};
+	
+	inline TypeInfo* Get_Name(const std::string& name)
+	{
+		auto result = TypeInfo::GetTypeInfoDictionary().find(name);
+		if( result != TypeInfo::GetTypeInfoDictionary().end() )
+		{
+			return result->second;
+		}
+		return nullptr;
+	}
+	
+	inline TypeInfo* Get_Name(const char* name)
+	{
+		return Get_Name(std::string(name));
+	}
 
 	
 	#include "Meta.inl"
@@ -435,6 +500,8 @@ namespace meta
 			virtual void DoSet(const Any& obj, const Any& in) const override
 			{
 				obj.GetPointer<Type>()->*m_Member = in.GetReference<MemberType>();
+				//if it breaks here, its because in.GetReference<MemberType>() tried to cast
+				// whatever const Any& in holds to a non-compatible type. Check call stack.
 			}
 		};
 	}
@@ -549,12 +616,12 @@ namespace meta
 		template <typename Type>
 		struct MetaHolder
 		{
-			static const TypeInfo s_TypeInfo;
+			static const StaticTypeInfo s_TypeInfo;
 		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
-	//  TypedInfo - Builds the MetaInformation.
+	//  TypeInfoBuilder - Builds the MetaInformation.
 	//////////////////////////////////////////////////////////////////////////////
 
 	namespace internal
@@ -627,13 +694,13 @@ namespace meta
 // T - The type to annotate.
 #define meta_DECLARE(T) \
 	public: \
-		struct MetaStaticHolder { static const meta::TypeInfo s_TypeInfo; }; \
+		struct MetaStaticHolder { static const meta::StaticTypeInfo s_TypeInfo; }; \
 		virtual const ::meta::TypeInfo*  GetType() const { return &MetaStaticHolder::s_TypeInfo; }
 
 // Put outside of any declaration to begin annotating a type.
 // T - The type to annotate.
-#define meta_DEFINE_EXTERN(T) template<> const meta::TypeInfo meta::internal::MetaHolder<T>::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, !std::is_fundamental<T>::value>(#T , sizeof(T))
+#define meta_DEFINE_EXTERN(T) template<> const meta::StaticTypeInfo meta::internal::MetaHolder<T>::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, !std::is_fundamental<T>::value>(#T , sizeof(T))
 
 // Put outside of any declaration to begin annotating a type marked up with META_DECLARE(T)
 //T - The type to annotate.
-#define meta_DEFINE(T) const ::meta::TypeInfo T::MetaStaticHolder::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, true>(#T, sizeof(T))
+#define meta_DEFINE(T) const ::meta::StaticTypeInfo T::MetaStaticHolder::s_TypeInfo = ::meta::internal::TypeInfoBuilder<T, true>(#T, sizeof(T))
