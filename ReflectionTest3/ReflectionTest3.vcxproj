@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Any.h" />
     <ClInclude Include="ClassCallers.h" />
     <ClInclude Include="Indices.h" />
     <ClInclude Include="MacroHelpers.h" />
