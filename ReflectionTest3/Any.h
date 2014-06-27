@@ -138,7 +138,7 @@ public:
 		assign(x);
 	}
 
-	Any(const Any& x) : : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
+	Any(const Any& x) : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(NULL)
 	{
 		assign(x);
 	}

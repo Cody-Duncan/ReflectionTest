@@ -79,16 +79,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Any.h" />
+    <ClInclude Include="AnyTest.h" />
     <ClInclude Include="ClassCallers.h" />
     <ClInclude Include="Indices.h" />
     <ClInclude Include="MacroHelpers.h" />
     <ClInclude Include="Meta.h" />
+    <ClInclude Include="MetaTest.h" />
     <ClInclude Include="MetaUtil.h" />
     <ClInclude Include="TypeRecord.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnyTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Meta.cpp" />
+    <ClCompile Include="MetaTest.cpp" />
     <ClCompile Include="MetaUtil.cpp" />
   </ItemGroup>
   <ItemGroup>

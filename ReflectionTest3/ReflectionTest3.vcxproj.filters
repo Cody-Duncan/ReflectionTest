@@ -36,6 +36,12 @@
     <ClInclude Include="Any.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AnyTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Meta.cpp">
@@ -45,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MetaUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AnyTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
