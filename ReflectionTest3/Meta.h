@@ -20,7 +20,7 @@ namespace meta
 		const TypeInfo* m_Type;  // This member's type.
 
 	public:
-		Member(const char* name, const TypeInfo* type) : m_Name(name), m_Type(type) {}
+		Member(const char* name, const TypeInfo* type) : m_Name(name), m_Owner(nullptr), m_Type(type) {}
 		virtual ~Member() {}
 
 		void SetOwner(const TypeInfo* newOwner)
@@ -49,7 +49,7 @@ namespace meta
 		const TypeInfo* m_Owner; // The type this method is apart of.
 
 	public:
-		Method(const char* name) : m_Name(name)
+		Method(const char* name) : m_Name(name), m_Owner(nullptr)
 		{}
 		virtual ~Method()
 		{}

@@ -19,6 +19,8 @@ namespace MetaTest
 		float baz(double d, char is_const) { return d > (double)is_const ? (float)(d * 0.5) : 0.f; }
 
 	public:
+		A1(): a(0), b(0.0f), c(0) {}
+
 		int getA() const { return a; }
 		void setA(int _) { a = _; }
 
@@ -51,7 +53,7 @@ namespace MetaTest
 	
 		//check A1 type
 		const meta::TypeInfo* aInfo = meta::Get<A1>();
-		std::cout << "Info on type: " <<  aInfo->GetName() <<  std::endl;
+		std::cout << "Info on type: " <<  aInfo->GetName() << std::endl;
 		assert(meta::Get<A1>()->GetSize() == sizeof (A1));
 
 		//check A1 members
